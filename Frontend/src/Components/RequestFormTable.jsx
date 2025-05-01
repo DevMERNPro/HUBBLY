@@ -4,7 +4,7 @@ import {
   Button, TextField, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import '../Styles/requestFormTable.css'; // Assuming you have a CSS file for styles
+import '../Styles/RequestFormTable.css'; // Assuming you have a CSS file for styles
 import Sidebar from './Sidebar';
 import axios from 'axios';
 import config from '../config';
