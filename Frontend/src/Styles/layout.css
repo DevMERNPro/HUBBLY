@@ -1,0 +1,13 @@
+.layout {
+    display: flex;
+  }
+  
+  .sidebar {
+    width: 60px; /* Adjust as per your sidebar design */
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 1rem;
+  }
+  

@@ -1,0 +1,51 @@
+.request-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .requests-table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #f9f9f9;
+  }
+  
+  .requests-table th,
+  .requests-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .requests-table th {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .requests-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .requests-table tr:hover {
+    background-color: #eaeaea;
+  }
+  
+  button {
+    margin-right: 8px;
+  }
+  
+  .MuiSelect-select {
+    min-width: 60px;
+  }
+  
+  .MuiDialog-paper {
+    min-width: 500px;
+  }
+  
