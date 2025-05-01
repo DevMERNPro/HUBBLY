@@ -1,6 +1,6 @@
 import React from 'react'
 import LandingPage from './Components/LandingPage'
-import SignIN from './Components/SignIN.JSX'
+import SignIn from './Components/SignIn'
 import SignUp from './Components/SignUp'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Sidebar from './Components/Sidebar'
@@ -22,7 +22,7 @@ const App = () => {
     
         <Routes>
           <Route  path='/' element={<LandingPage/>}/>
-          <Route  path='/signin' element={<SignIN/>}/>
+          <Route  path='/signin' element={<SignIn/>}/>
           <Route  path='/signup' element={<SignUp/>}/>
           <Route element={<SidebarLayout />}>
         <Route path="/dashboard" element={<TicketDashboard />} />
