@@ -9,7 +9,7 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-import "../Styles/sidebar.css";
+import "../Styles/Sidebar.css";
 import logo from "../images/logo.png";
 import { useAuth } from "./context";
 import { FaTicket } from "react-icons/fa6";
