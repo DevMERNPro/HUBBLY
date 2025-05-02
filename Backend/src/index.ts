@@ -1,47 +1,50 @@
+
 import express from "express";
 import cors from "cors";
 import compression from "compression";
-import config from "./config";
 import morgan from "morgan";
 import path from "path";
 import fs from "fs";
-import { TokenInfo } from "./types";
 import cookieParser from "cookie-parser";
-import {
-  FOLDER_PATH,
-  blueText,
-  greenText,
-  redLogger,
-  redText,
-} from "./constants";
-import { memberAuthHandler } from "./middlewares/AuthHandler";
-import ErrorHandler from "./middlewares/ErrorHandler";
 import mongoose from "mongoose";
-import CONFIG from "./config";
-import { paginationChecker } from "./middlewares/PaginationChecker";
-import { Admin } from "./models";
 import { hash } from "bcrypt";
-import control from './controllers/control'
 
+// Config & Constants
+import CONFIG from "./config";
+import { FOLDER_PATH, blueText, greenText, redLogger, redText } from "./constants";
+
+// Middlewares
+import { memberAuthHandler } from "./middlewares/AuthHandler";
+import { paginationChecker } from "./middlewares/PaginationChecker";
+import ErrorHandler from "./middlewares/ErrorHandler";
+
+// Models
+import { Admin } from "./models";
+
+// Routes
+import control from "./controllers/control";
+
+// Types
+import { TokenInfo } from "./types";
+
+// App Init
+const app = express();
+
+// Define paths
 const publicFolderPath = path.join(process.cwd(), FOLDER_PATH.PUBLIC);
 const uploadFolderPath = path.join(publicFolderPath, FOLDER_PATH.UPLOADS);
 
-console.log(blueText, "🚀 Application Starting...", blueText);
-// 📁 Public Folder Creation
-if (!fs.existsSync(publicFolderPath)) {
-  fs.mkdirSync(publicFolderPath);
-  console.log(blueText, "📁 Public Folder Created", blueText);
-} else {
-  console.log(blueText, "📁 Public Folder Exists", blueText);
-}
+// Create necessary folders
+[publicFolderPath, uploadFolderPath].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+    console.log(blueText, `📁 Folder Created: ${dir}`, blueText);
+  } else {
+    console.log(blueText, `📁 Folder Exists: ${dir}`, blueText);
+  }
+});
 
-if (!fs.existsSync(uploadFolderPath)) {
-  fs.mkdirSync(uploadFolderPath);
-  console.log(blueText, "📁 Uploads Folder Created", blueText);
-} else {
-  console.log(blueText, "📁 Uploads Folder Exists", blueText);
-}
-
+// CORS Config
 const corsConfig = {
   credentials: true,
   origin: [
@@ -54,24 +57,24 @@ const corsConfig = {
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 };
 
-//! 🚀 Create an instance of express
-const app = express();
+// Express Global Middlewares
+app.use(morgan("dev"));
+app.use(cors(corsConfig));
+app.use(express.json());
+app.use(cookieParser());
+app.use(compression());
+app.use("/static", express.static(publicFolderPath));
 
-app.use(morgan("dev")); //! 📝 Log HTTP or HTTPS requests
+// Health Check Route
+app.get("/", (_, res) => {
+  res.json({
+    status: "OK",
+    health: "✅ Good",
+    message: `Welcome to the API of ${CONFIG.APP_NAME}`,
+  });
+});
 
-app.use(cors(corsConfig)); //! 📝 Enable Cross-Origin Resource Sharing (CORS)
-
-app.use(express.json()); //! 📝 Parse JSON bodies
-
-app.use(cookieParser()); //! 📝 Parse Cookie headers
-
-app.use(compression()); //! 📝 Compress HTTP or HTTPS responses
-
-app.use("/static", express.static(publicFolderPath)); //! 📝 Serve Static Files
-
-/**
- * ? 🌐 Global Declaration
- */
+// Extend Express Request Type
 declare global {
   namespace Express {
     interface Request {
@@ -81,17 +84,21 @@ declare global {
   }
 }
 
-// 🔄 Immediately Invoked Function Expression (IIFE) for async initialization
+// Init Function
 (async () => {
   try {
-    // 📦 Database Initialization
-    console.log(blueText, "📦  Database Initialization Started", blueText);
-    // connecting to database
+    if (!CONFIG.DB_URL) {
+      throw new Error("Database URL not defined in config");
+    }
+
+    console.log(blueText, "📦 Connecting to database...", blueText);
     await mongoose.connect(CONFIG.DB_URL, {
       maxPoolSize: CONFIG.DB_POOL_SIZE,
     });
-    console.log(blueText, "📦  Database Initialization Completed", blueText);
 
+    console.log(greenText, "✅ Database connected successfully", greenText);
+
+    // Admin seeding
     const admin = await Admin.findOne({ email: "admin@gmail.com" });
     if (!admin) {
       await Admin.create({
@@ -99,72 +106,42 @@ declare global {
         email: "admin@gmail.com",
         password: await hash("admin123", CONFIG.SALT_ROUNDS),
       });
-      console.log(greenText, "📦  Admin User Created", greenText);
+      console.log(greenText, "👤 Admin created", greenText);
     }
-    console.log(greenText, "📦  Database Initialization Completed", greenText);
-    console.log(greenText, `📦  Connected To ${config.DB_URL} `, greenText);
-    // 🌐 Server Initialization
-    console.log(
-      blueText,
-      ` Starting the server on port ${config.PORT}...`,
-      blueText
-    );
-    try {
-      app.listen(config.PORT, () => {
-        console.log(
-          greenText,
-          `🎧 Server is listening on port: ${config.PORT} 🚀`,
-          greenText
-        );
-      });
-    } catch (error) {
+
+    // Start Server
+    app.listen(CONFIG.PORT, () => {
       console.log(
-        redText,
-        "🚨 Error in server initialization \n",
-        JSON.stringify(error).replace(/,|{|}|and/g, "\n"),
-        redText
+        greenText,
+        `🚀 Server running on port ${CONFIG.PORT}`,
+        greenText
       );
-    }
-  } catch (error) {
-    // console.log("🚨 Error in server initialization", error);
+    });
+  } catch (error: any) {
     console.log(
       redText,
-      "🚨 Error in server initialization \n",
-      JSON.stringify(error).replace(/,|{|}|and/g, "\n"),
+      "🚨 Server initialization failed:",
+      JSON.stringify(error, null, 2),
       redText
     );
-    // 🛑 restart by executing rs in cmd
-    redLogger("🛑 Application Stopped due to error in server initialization");
+    redLogger("🛑 Application Stopped");
     process.exit(1);
   }
 })();
 
-/**
- * ! This is the Health check of the application
- */
-app.get("/", (_, res) => {
-  res.json({
-    status: "OK",
-    health: "✅ Good",
-    message: `Welcome to the API of ${config.APP_NAME}`,
-  });
-});
+// Middlewares & Routes
+app.use(paginationChecker);
+// app.use(memberAuthHandler); // Uncomment when needed
+app.use("/api/v1", control);
 
-app.use(paginationChecker); //! 🚨 Pagniation Middleware
-// app.use(memberAuthHandler); //! 🚨 Auth Middleware
-
-
-
-app.use("/api/v1", control); //! 🚨 Routes Middleware
-
-
+// 404 Fallback
 // app.use("*", (_, res) => {
 //   res.status(404).json({
 //     status: "Not Found",
-//     health: "❌ Bad",
-//     msg: `Route Not Found`,
+//     health: "❌",
+//     msg: "Route Not Found",
 //   });
 // });
 
-//! 🚨 Error Middleware came here and the response is given back
+// Error Handler
 app.use(ErrorHandler);
