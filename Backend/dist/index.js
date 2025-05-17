@@ -53,6 +53,7 @@ const corsConfig = {
         "http://localhost:80",
         "http://localhost:5173/",
         "http://localhost:5173",
+        "https://hubbly.onrender.com",
     ],
     allowedHeaders: ["Content-Type", "Authorization", "token"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
